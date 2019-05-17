@@ -9,13 +9,19 @@
     <asp:View ID="View" runat="server">
         <div class="row">
             <div class="col-sm-12">
-                <h4><strong>Upcoming Performances:</strong></h4>
+                <h4><strong><%=Title %></strong></h4>
                 <asp:Literal ID="litEvents" runat="server" />
             </div>
         </div>
     </asp:View>
     <asp:View ID="Edit" runat="server">
         <table>
+            <tr>
+                <td>Title:</td>
+                <td>
+                    <asp:TextBox ID="titleTextBox" runat="server"></asp:TextBox>
+                </td>
+            </tr>
             <tr>
                 <td>CalendarID:</td>
                 <td>

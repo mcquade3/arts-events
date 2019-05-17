@@ -22,6 +22,13 @@ public partial class widgets_CalendarEvents : System.Web.UI.UserControl
     private string _calendarURL;
     private string _taxonomyPath;
 
+    [WidgetDataMember("Upcoming Performances")]
+    public string Title
+    {
+        get { return _title; }
+        set { _title = value; }
+    }
+
     [WidgetDataMember(1448)]
     public int CalendarID
     {
@@ -76,11 +83,8 @@ public partial class widgets_CalendarEvents : System.Web.UI.UserControl
         // sort the list chronologically
         webEvents.Sort((we1, we2) => we1.EventStartUtc.CompareTo(we2.EventStartUtc));
 
-        // Prevent "index out of bounds" error
-        if (limit > webEvents.Count) { limit = webEvents.Count; }
-
         // Populate the widget with the HTML for the events
-        litEvents.Text = PopulateLiteral(webEvents.GetRange(0,limit));
+        litEvents.Text = PopulateLiteral(webEvents, limit);
     }
 
     private List<WebEventData> GetEventsItems(long calendarId, DateTime startUtc, DateTime endUtc)
@@ -104,14 +108,31 @@ public partial class widgets_CalendarEvents : System.Web.UI.UserControl
         return input.Id;
     }
     
-    private string PopulateLiteral(List<WebEventData> webEvents)
+    private string PopulateLiteral(List<WebEventData> webEvents, int limit)
     {
-        string html = "";
+        string html = ""; // Literal to be populated
+        List<String> eventsList = new List<String>(); // Keeps a record of all the event titles listed so far
+
+        // Check if there are no events
         if (webEvents.Count == 0) { return "No events are scheduled at this time. Check back soon!"; }
-        for (int i = 0; i < webEvents.Count; i++)
+
+        // Remove duplicates
+        foreach (WebEventData webEvent in webEvents)
+        {
+            if (!eventsList.Contains(webEvent.Teaser))
+            {
+                eventsList.Add(webEvent.Teaser);
+            }
+        }
+
+        // Prevent "index out of bounds" error
+        if (limit > eventsList.Count) { limit = eventsList.Count; }
+
+        // Populate HTML
+        for (int i = 0; i < limit; i++)
         {
             html += "<p id='arts-events-literal'>" +
-                        webEvents[i].Teaser +
+                        eventsList[i] +
                     "</p>" +
                     "<hr>";
         }
@@ -131,6 +152,7 @@ public partial class widgets_CalendarEvents : System.Web.UI.UserControl
     
     protected void EditButtonClicked(string settings)
     {
+        titleTextBox.Text = Title;
         calendarIDtextBox.Text = CalendarID.ToString();
         taxonomyTextBox.Text = TaxonomyPath;
         numEventsTextBox.Text = NumEvents.ToString();
@@ -144,6 +166,7 @@ public partial class widgets_CalendarEvents : System.Web.UI.UserControl
 
     protected void SaveButton_Click(object sender, EventArgs e)
     {
+        Title = titleTextBox.Text;
         CalendarID = Convert.ToInt32(calendarIDtextBox.Text);
         TaxonomyPath = taxonomyTextBox.Text;
         NumEvents = Convert.ToInt32(numEventsTextBox.Text);
